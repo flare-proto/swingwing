@@ -2,7 +2,7 @@ local sw = {}
 
 local psil           = require("scada-common.psil")
 
-
+local toasermq= require "toastermq_client"
 
 local astar = require "astar"
 
@@ -329,5 +329,17 @@ function sw.openNetwork(path)
 end
 
 sw.psil =  psil.create()
+
+function sw.daemon(side,exchange,address)
+    return function()
+        toasermq.connect(side,address)
+        toasermq.bind("swingwing-"..exchange,"#",exchange)
+        while true do
+            local _,msg = toasermq.recv()
+            sw.psil.publish(msg.routingKey,msg.data)
+        end
+    end, toasermq.daemon
+    
+end
 
 return sw
