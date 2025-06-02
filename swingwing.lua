@@ -1,5 +1,9 @@
 local sw = {}
 
+local psil           = require("scada-common.psil")
+
+
+
 local astar = require "astar"
 
 local function newNet()
@@ -49,7 +53,8 @@ local function newNet()
             output = IConnectorData.output,
             x = IConnectorData.x or 2,
             y = IConnectorData.y or 1,
-            name = IConnectorData.name
+            name = IConnectorData.name,
+            activated_by = "NOP"
         }
         function IConnector.getOutput(num)
             return vector.new(IConnector.w + IConnector.x, (num*2 + IConnector.y))
@@ -59,11 +64,16 @@ local function newNet()
             return vector.new(IConnector.x - 2, (num*2 + IConnector.y))
         end
 
+        function IConnector:activeOn(by)
+            self.activated_by = by
+            return self
+        end
+
         return IConnector
     end
 
     local function newStage(stageData)
-        stageData.w = #stageData.name + 2
+        stageData.w = #stageData.name + 4
         local stage = newIConnector(stageData)
         stage.h = 1
 
@@ -72,7 +82,7 @@ local function newNet()
         end
 
         function stage.getInput()
-            return vector.new(stage.x - 1, stage.y)
+            return vector.new(stage.x - 2, stage.y)
         end
         return stage
     end
@@ -97,6 +107,7 @@ local function newNet()
     local function newUnit(stageData)
         stageData.w = 20
         local stage = newIConnector(stageData)
+        
         return stage
     end
 
@@ -303,6 +314,10 @@ local function newNet()
         return pipes
     end
 
+    function net.stages()
+        return stages
+    end
+
     return net
 end
 
@@ -312,5 +327,7 @@ function sw.openNetwork(path)
 
     return net
 end
+
+sw.psil =  psil.create()
 
 return sw

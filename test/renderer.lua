@@ -3,6 +3,7 @@
 --
 
 local panel_view = require("test.panel.pipenet")
+local sw = require "swingwing"
 local pgi        = require("test.panel.pgi")
 --local style      = require("test.panel.style")
 local style         = require("test.panel.style")
@@ -79,6 +80,8 @@ function renderer.try_start_ui(theme, color_mode)
             renderer.close_ui()
         end
     end
+
+    sw.psil.publish("sb.concrete.active",true)
 
     return status, msg
 end
